@@ -244,3 +244,123 @@ namespace WpfApp1
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows;
+
+namespace WpfApp1
+{
+    public partial class MainWindow : Window
+    {
+        private List<int> liczby = new List<int>();
+
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void OdczytajZPliku(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "plik tekstowy | *.txt";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                    var lines = File.ReadAllLines(openFileDialog.FileName);
+                    liczby = lines.SelectMany(line => line.Split(new[] { ' ', ',', ';', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries))
+                                  .Where(x => int.TryParse(x, out _))
+                                  .Select(int.Parse)
+                                  .ToList();
+            }
+        }
+
+        private void ZapiszDoPliku(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Pliki tekstowe (*.txt)|*.txt|Wszystkie pliki (*.*)|*.*"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                    File.WriteAllLines(saveFileDialog.FileName, liczby.Select(x => x.ToString()));
+                    WynikTextBlock.Text += "\nDane zapisano do pliku.";
+
+            }
+        }
+
+        private void SzukajLiczbyPierwsze(object sender, RoutedEventArgs e)
+        {
+            var liczbyPierwsze = liczby.Where(JestPierwsza).ToList();
+            WynikTextBlock.Text += $"\nLiczby pierwsze: {string.Join(", ", liczbyPierwsze)}";
+        }
+
+        private void PodajMaksymalnaLiczbe(object sender, RoutedEventArgs e)
+        {
+            if (liczby.Any())
+            {
+                int max = liczby.Max();
+                WynikTextBlock.Text += $"\nMaksymalna liczba: {max}";
+            }
+            else
+            {
+                WynikTextBlock.Text += "\nBrak danych.";
+            }
+        }
+
+        private void PodajMinimalnaLiczbe(object sender, RoutedEventArgs e)
+        {
+            if (liczby.Any())
+            {
+                int min = liczby.Min();
+                WynikTextBlock.Text += $"\nMinimalna liczba: {min}";
+            }
+            else
+            {
+                WynikTextBlock.Text += "\nBrak danych.";
+            }
+        }
+
+        private void PodajLiczbeWystapien(object sender, RoutedEventArgs e)
+        {
+            var okno = new LiczbaDialog();
+            if (okno.ShowDialog() == true)
+            {
+                int liczba = okno.PodanaLiczba;
+                int wystapienia = liczby.Count(x => x == liczba);
+                WynikTextBlock.Text += $"\nLiczba {liczba} występuje {wystapienia} razy.";
+            }
+        }
+
+        private void Zamknij(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private bool JestPierwsza(int number)
+        {
+            if (number < 2) return false;
+            for (int i = 2; i <= Math.Sqrt(number); i++)
+            {
+                if (number % i == 0) return false;
+            }
+            return true;
+        }
+    }
+}
