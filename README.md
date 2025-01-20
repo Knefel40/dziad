@@ -364,3 +364,33 @@ namespace WpfApp1
         }
     }
 }
+
+
+
+
+
+private void OdczytajZPliku(object sender, RoutedEventArgs e)
+{
+    OpenFileDialog openFileDialog = new OpenFileDialog
+    {
+        Filter = "Plik tekstowy | *.txt"
+    };
+
+    if (openFileDialog.ShowDialog() == true)
+    {
+        liczby.Clear(); // Czyszczenie listy przed dodaniem nowych danych
+        var lines = File.ReadAllLines(openFileDialog.FileName);
+
+        foreach (var line in lines)
+        {
+            var elements = line.Split(' '); // Zakładamy, że liczby są oddzielone spacjami
+            foreach (var element in elements)
+            {
+                if (int.TryParse(element, out int liczba))
+                {
+                    liczby.Add(liczba);
+                }
+            }
+        }
+    }
+}
